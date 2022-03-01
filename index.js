@@ -2,9 +2,11 @@ var xrpl = require("xrpl");
 const createCsvWriter = require("csv-writer").createObjectCsvWriter;
 
 var publicServer = "wss://s1.ripple.com/"; //RPC server
-var issuer = "rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn";
-var ledgerIndex = "69937000";
+var issuer = "rXCoYSUnkpygdtfpz3Df8dKQuRZjM9UFi";
+var ledgerIndex = "69800000";
 var throttle = 5 //Number of seconds to throttle each request
+var sortByBalance = true; //true or false
+var sort_dir = 'asc' //asc or desc
 
 const csvWriter = createCsvWriter({
   path: "output.csv",
@@ -19,6 +21,7 @@ var data = [];
 const accountLinesRequest = {
   command: "account_lines",
   account: issuer,
+  limit: 400,
   ledger_index: ledgerIndex,
 };
 
@@ -62,6 +65,18 @@ async function main() {
       );
       ProcessData(accountTx.lines);
       marker = accountTx.marker;
+    }
+
+    //Sort if true
+
+    if(sortByBalance == true)
+    {
+      if(sort_dir == 'asc')
+      {
+        data.sort((a, b) => parseFloat(a.balance) - parseFloat(b.balance));
+      } else {
+        data.sort((a, b) => parseFloat(b.balance) - parseFloat(a.balance));
+      }
     }
 
     csvWriter
